@@ -40,10 +40,24 @@ def main():
     zips = glob.glob(os.path.join(DIST, "PEAKMenu-v*-with-BepInEx.zip"))
     if not zips:
         raise SystemExit("no release zip in dist/")
+    # files byte-identical to the official BepInEx release are theirs, untouched: their DLLs carry
+    # BepInEx's, Cecil's and MonoMod's own build-server paths, which are not ours to scrub
+    official = {}
+    bep = os.path.join(REPO, "build", "BepInEx_win_x64_5.4.23.6.zip")
+    with zipfile.ZipFile(bep) as b:
+        for info in b.infolist():
+            if not info.is_dir():
+                official[info.filename] = b.read(info)
+    skipped = 0
     for zp in zips:
         with zipfile.ZipFile(zp) as z:
             for name in z.namelist():
-                total += hits(z.read(name), os.path.basename(zp) + "/" + name)
+                data = z.read(name)
+                if official.get(name) == data:
+                    skipped += 1
+                    continue
+                total += hits(data, os.path.basename(zp) + "/" + name)
+    print(f"skipped {skipped} files identical to the official BepInEx 5.4.23.6 release")
     # positive control: the scanner must find the product name, or it is not reading the files
     data = open(dll, "rb").read().lower()
     if b"peakmenu" not in data:

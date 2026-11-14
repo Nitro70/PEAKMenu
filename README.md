@@ -37,7 +37,7 @@ If you also run another menu that opens with Insert (for example PEAK AIO), remo
 | **ESP** | Scouts (health, passed out, dead), items, food, special items, closed luggage and what can come out, campfires, revive statues and effigies, the Scoutmaster, zombies, spiders, beetles and other mobs, beehives. Optional boxes, lines and distance |
 | **Visuals** | Field of view, no fog, fullbright, always daytime (just for you), hide the HUD, the game's own free camera |
 | **Players** | Pick a scout. Help: revive, bring to me, teleport to them, wake up, free. Troll: knock over, launch, fling, rocket, big jump, pass out, zombify, pin in place, throw their held item, carry them, explode, banana slip, play dead, backflip, force crouch, Scoutmaster hunts or throws them, give any status. Repeating versions (keep knocking over, keep launching, rocket spam, float) and everyone-at-once versions |
-| **Items** | Spawn any item (in your hands, at your feet, where you look, on a picked scout), quick kits, refill what you hold, infinite item uses |
+| **Items** | Spawn any item (in your hands, at your feet, where you look, on a picked scout), quick kits, refill what you hold, infinite item uses, long-range rescue claw (range slider up to 1000 m) |
 | **World** | Open all or nearby luggage, teleport to the campfire or the summit, light the campfire (moves the run to the next area), put out every campfire, anger every bee swarm, win the run, end the run. As host: jump to an area, time of day, stop the fog, spawn the Scoutmaster, lobby size |
 | **Unlocks** | All cosmetics for the session (nothing saved), every badge, ascent levels. Badges and ascents are written to your Steam account as real achievements and stats, so those buttons ask for a second click |
 

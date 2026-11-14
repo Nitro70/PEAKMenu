@@ -99,6 +99,10 @@ namespace PEAKMenu.Features
 
             tab.Switch("items.infinite", "Infinite item uses", "Keeps the item in your hands full: endless rope, food, flares, lantern fuel...", Scope.Client, () => InfiniteUses, v => InfiniteUses = v);
 
+            tab.Switch("items.claw", "Long-range rescue claw", "The rescue claw you hold reaches as far as you set (normally 30 m, 40 m aiming down), and its pull lasts long enough to finish. Back to normal when you let go of it or turn this off.", Scope.Client,
+                () => LongClaw, v => LongClaw = v)
+                .WithBody(() => Settings.SetFloat("items.clawrange", Ui.Slider("Range", ClawRange, 40f, 1000f, "0", " m")));
+
             tab.Panel("items.kits", "Quick kits", "One click for a handful of useful things at your feet.", Scope.Client, () =>
             {
                 GUILayout.BeginHorizontal();
@@ -216,8 +220,136 @@ namespace PEAKMenu.Features
             return 100f;
         }
 
+        // ---- long-range rescue claw ----
+        // The claw's aim check (range, rangeDownward) runs on the holder's machine, so a guest can
+        // change it. A pull ends within 5 m of the target or when its time limit runs out; the limits
+        // are scaled with the range so a far pull can finish but still always ends. The pull strength
+        // comes from a distance curve that may fade out past the normal range, so it gets extended at
+        // its strongest value. Everything goes back the moment you stop holding it or switch this off.
+
+        public static bool LongClaw;
+        private static float ClawRange => Settings.Float("items.clawrange", 300f);
+
+        private sealed class ClawDefaults
+        {
+            public float Range, Down, Wall, Scout;
+            public AnimationCurve Curve, Extended;
+        }
+
+        private static readonly Dictionary<RescueHook, ClawDefaults> claws = new();
+
+        private static void ClawTick()
+        {
+            RescueHook held = null;
+
+            if (LongClaw && Game.InWorld && Game.Local.data.currentItem)
+            {
+                held = Game.Local.data.currentItem.GetComponent<RescueHook>();
+            }
+
+            foreach (var kv in claws.ToList())
+            {
+                if (!kv.Key)
+                {
+                    claws.Remove(kv.Key);
+                }
+                else if (kv.Key != held)
+                {
+                    RestoreClaw(kv.Key, kv.Value);
+                    claws.Remove(kv.Key);
+                }
+            }
+
+            if (!held)
+            {
+                return;
+            }
+
+            if (!claws.TryGetValue(held, out var d))
+            {
+                d = new ClawDefaults
+                {
+                    Range = held.range,
+                    Down = held.rangeDownward,
+                    Wall = held.maxWallHookTime,
+                    Scout = held.maxScoutHookTime,
+                    Curve = held.pulLStrengthCurve
+                };
+                d.Extended = ExtendCurve(d.Curve);
+                claws[held] = d;
+            }
+
+            float range = Mathf.Max(ClawRange, d.Down, d.Range);
+            float scale = range / Mathf.Max(1f, d.Range);
+            held.range = range;
+            held.rangeDownward = range;
+            held.maxWallHookTime = d.Wall * scale;
+            held.maxScoutHookTime = d.Scout * scale;
+
+            if (d.Extended != null)
+            {
+                held.pulLStrengthCurve = d.Extended;
+            }
+        }
+
+        private static void RestoreClaw(RescueHook hook, ClawDefaults d)
+        {
+            hook.range = d.Range;
+            hook.rangeDownward = d.Down;
+            hook.maxWallHookTime = d.Wall;
+            hook.maxScoutHookTime = d.Scout;
+            hook.pulLStrengthCurve = d.Curve;
+        }
+
+        // the same curve, but past its strongest point it stays at that strength out to 5 km
+        private static AnimationCurve ExtendCurve(AnimationCurve c)
+        {
+            if (c == null || c.length == 0)
+            {
+                return null;
+            }
+
+            var keys = c.keys;
+            int peak = 0;
+
+            for (int i = 1; i < keys.Length; i++)
+            {
+                if (keys[i].value > keys[peak].value)
+                {
+                    peak = i;
+                }
+            }
+
+            var last = keys[keys.Length - 1];
+            var list = new List<Keyframe>();
+
+            if (last.value >= keys[peak].value * 0.5f)
+            {
+                // it already ends strong: keep it all and hold the end value
+                list.AddRange(keys);
+                list.Add(new Keyframe(Mathf.Max(last.time + 1f, 5000f), last.value, 0f, 0f));
+            }
+            else
+            {
+                // it fades out at the far end: keep it up to the peak, then hold the peak
+                for (int i = 0; i <= peak; i++)
+                {
+                    list.Add(keys[i]);
+                }
+
+                var top = list[list.Count - 1];
+                top.outTangent = 0f;
+                list[list.Count - 1] = top;
+                list.Add(new Keyframe(Mathf.Max(top.time + 1f, 5000f), top.value, 0f, 0f));
+            }
+
+            return new AnimationCurve(list.ToArray()) { preWrapMode = c.preWrapMode, postWrapMode = WrapMode.ClampForever };
+        }
+
         public static void Tick()
         {
+            Safe.Run("items.claw", ClawTick);
+
             if (!InfiniteUses || !Game.InWorld || Time.unscaledTime < nextRefill)
             {
                 return;

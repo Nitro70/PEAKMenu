@@ -378,11 +378,11 @@ namespace PEAKMenu.UI
                 GUILayout.Label("<color=#E8A860>" + blocked + "</color>", Theme.Desc);
             }
 
-            if (c.Body != null && !broken)
+            // a locked card shows only why it is locked: its controls may need things that don't exist
+            // yet (your scout outside a run), and drawing them anyway just throws every frame
+            if (c.Body != null && !broken && blocked == null)
             {
-                GUI.enabled = usable;
                 RunBody(c.Id + ".body", c.Body);
-                GUI.enabled = true;
             }
 
             GUILayout.EndVertical();

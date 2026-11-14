@@ -6,7 +6,7 @@
     <RootNamespace>PEAKMenu</RootNamespace>
     <Product>PEAKMenu</Product>
     <Description>Mod menu for PEAK by Nitro70</Description>
-    <Version>0.1.1</Version>
+    <Version>0.1.2</Version>
     <LangVersion>12.0</LangVersion>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>

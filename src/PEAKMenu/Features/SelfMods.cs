@@ -68,7 +68,12 @@ namespace PEAKMenu.Features
 
         private static void StatusPanel()
         {
-            var aff = Game.Local.refs.afflictions;
+            var aff = Game.InWorld ? Game.Local.refs.afflictions : null;
+
+            if (!aff)
+            {
+                return;
+            }
 
             foreach (CharacterAfflictions.STATUSTYPE t in Enum.GetValues(typeof(CharacterAfflictions.STATUSTYPE)))
             {

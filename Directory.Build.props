@@ -1,0 +1,6 @@
+<Project>
+  <!-- release builds map source paths to /_/ so no build-machine path ends up in the DLL -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+</Project>

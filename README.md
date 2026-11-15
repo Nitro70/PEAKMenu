@@ -2,7 +2,7 @@
 
 A mod menu for **PEAK** (BepInEx 5), by Nitro70.
 
-> **Status: pre-release, not tested in game yet.** It builds against PEAK 3.1, and every game class, method and network message it uses was checked against the game's code, but nobody has played with it yet. Expect rough edges and please open an issue if something doesn't work.
+> **Status: early version.** It loads and opens in PEAK 3.1, and every game class, method and network message it uses was checked against the game's code, but most features haven't been tried in real play yet. Expect rough edges and please open an issue if something doesn't work.
 
 Press **Insert** in game to open it (you can change the key in Settings). The window has a sidebar of tabs, a search box over every card, favourites (click the star), key binds (right-click a card) and a CLIENT or HOST badge on each card. If a game update breaks a card, that card switches itself off and says so; the rest keeps working.
 
